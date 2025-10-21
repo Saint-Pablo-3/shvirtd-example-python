@@ -9,10 +9,10 @@ from typing import Optional
 
 # --- 1. Конфигурация ---
 # Считываем конфигурацию БД из переменных окружения
-db_host = os.environ.get('DB_HOST', '127.0.0.1')
+db_host = os.environ.get('DB_HOST', 'db')
 db_user = os.environ.get('DB_USER', 'app')
-db_password = os.environ.get('DB_PASSWORD', 'very_strong')
-db_name = os.environ.get('DB_NAME', 'example')
+db_password = os.environ.get('DB_PASSWORD', 'QwErTy1234')
+db_name = os.environ.get('DB_NAME', 'virtd')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -75,7 +75,8 @@ def get_client_ip(x_real_ip: Optional[str] = Header(None)):
 # --- 5. Основной эндпоинт ---
 @app.get("/")
 def index(request: Request, ip_address: Optional[str] = Depends(get_client_ip)):
-    final_ip = ip_address  # Только из X-Forwarded-For, без fallback
+    # Получаем IP клиента (из заголовков или напрямую)
+    final_ip = ip_address or request.client.host
 
     now = datetime.now()
     current_time = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -91,13 +92,9 @@ def index(request: Request, ip_address: Optional[str] = Depends(get_client_ip)):
     except mysql.connector.Error as err:
         return {"error": f"Ошибка при работе с базой данных: {err}"}
 
-    # Подсказка для студентов при неправильном обращении
-    if final_ip is None:
-        ip_display = "похоже, что вы направляете запрос в неверный порт(например curl http://127.0.0.1:5000). Правильное выполнение задания - отправить запрос в порт 8090."
-    else:
-        ip_display = final_ip
+    # Просто возвращаем IP — без учебных подсказок
+    return f'TIME: {current_time}, IP: {final_ip}'
 
-    return f'TIME: {current_time}, IP: {ip_display}'
 
 
 # --- 5. Отладочный эндпоинт ---
