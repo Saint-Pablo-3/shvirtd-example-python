@@ -15,8 +15,6 @@ services:
       DB_USER: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
       DB_NAME: ${MYSQL_DATABASE}
-    depends_on:
-      - db
     networks:
       backend:
         ipv4_address: 172.20.0.5
